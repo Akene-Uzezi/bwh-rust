@@ -40,10 +40,27 @@ impl Lexer {
                 token_type: token::EOF,
                 token_literal: String::new(),
             },
-            _ => new_token(token::ILLEGAL, self.ch),
+            _ => {
+                if is_letter(self.ch) {
+                    let literal = self.read_identifier();
+                    return token::Token {
+                        token_type: token::IDENT,
+                        token_literal: literal,
+                    };
+                } else {
+                    new_token(token::ILLEGAL, self.ch)
+                }
+            }
         };
         self.read_char();
         tok
+    }
+    fn read_identifier(&mut self) -> String {
+        let position = self.position;
+        while is_letter(self.ch) {
+            self.read_char();
+        }
+        String::from_utf8(self.input[position..self.position].to_vec()).unwrap()
     }
 }
 
@@ -52,6 +69,10 @@ fn new_token(token_type: token::TokenType, ch: u8) -> token::Token {
         token_type,
         token_literal: (ch as char).to_string(),
     }
+}
+
+fn is_letter(ch: u8) -> bool {
+    ch.is_ascii_alphabetic() || ch == b'_'
 }
 
 #[cfg(test)]
