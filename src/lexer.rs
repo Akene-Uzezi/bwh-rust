@@ -32,7 +32,8 @@ impl Lexer {
             b';' => new_token(token::SEMICOLON, self.ch),
             b'(' => new_token(token::LPAREN, self.ch),
             b')' => new_token(token::RPAREN, self.ch),
-            b'{' => new_token(token::LPAREN, self.ch),
+            b'{' => new_token(token::LBRACE, self.ch),
+            b'}' => new_token(token::RBRACE, self.ch),
             b',' => new_token(token::COMMA, self.ch),
             b'+' => new_token(token::PLUS, self.ch),
             0 => token::Token {
@@ -50,5 +51,43 @@ fn new_token(token_type: token::TokenType, ch: u8) -> token::Token {
     token::Token {
         token_type,
         token_literal: (ch as char).to_string(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_next_token() {
+        let input = "=+(){};";
+
+        let tests = [
+            (token::ASSIGN, "="),
+            (token::PLUS, "+"),
+            (token::LPAREN, "("),
+            (token::RPAREN, ")"),
+            (token::LBRACE, "{"),
+            (token::RBRACE, "}"),
+            (token::SEMICOLON, ";"),
+        ];
+
+        let mut l = Lexer::new(input.as_bytes().to_vec());
+        for (i, (expected_type, expected_literal)) in tests.iter().enumerate() {
+            let tok = l.next_token();
+
+            assert_eq!(
+                tok.token_type, *expected_type,
+                "tests[{}] tokentype wrong",
+                i
+            );
+
+            assert_eq!(
+                tok.token_literal,
+                *expected_literal.to_string(),
+                "test[{}] tokenliteral wrong",
+                i
+            );
+        }
     }
 }
