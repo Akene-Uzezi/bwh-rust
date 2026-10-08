@@ -2,7 +2,7 @@
 pub type TokenType = &'static str;
 pub struct Token {
     pub token_type: TokenType,
-    pub literal: String,
+    pub token_literal: String,
 }
 
 pub const ILLEGAL: TokenType = "ILLEGAL";
