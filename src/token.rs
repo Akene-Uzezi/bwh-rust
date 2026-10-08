@@ -1,5 +1,4 @@
 //token
-#[allow(unused)]
 pub type TokenType = &'static str;
 pub struct Token {
     pub token_type: TokenType,
