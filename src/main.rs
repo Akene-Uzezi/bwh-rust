@@ -1,11 +1,15 @@
 use bwh_rust::{lexer::Lexer, token};
-use std::io::{self, Read};
 
 fn main() {
-    let mut input = String::new();
-    io::stdin().read_to_string(&mut input).expect("Failed to read stdin");
-
-    let mut lexer = Lexer::new(input.into_bytes());
+    let input = "
+            let five = 5;
+            let ten = 10;
+            let add = fn(x, y) {
+                x + y;
+            }
+            let result = add(five, ten);
+        ";
+    let mut lexer = Lexer::new(input.as_bytes().to_vec());
 
     loop {
         let tok = lexer.next_token();
@@ -15,3 +19,4 @@ fn main() {
         println!("{:?}\t{}", tok.token_type, tok.token_literal);
     }
 }
+
