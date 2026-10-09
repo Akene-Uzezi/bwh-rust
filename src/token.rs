@@ -1,4 +1,8 @@
 //token
+use std::collections::HashMap;
+use std::sync::LazyLock;
+static KEYWORDS: LazyLock<HashMap<&'static str, TokenType>> =
+    LazyLock::new(|| HashMap::from([("fn", FUNCTION), ("let", LET)]));
 pub type TokenType = &'static str;
 pub struct Token {
     pub token_type: TokenType,
@@ -19,3 +23,10 @@ pub const LBRACE: TokenType = "{";
 pub const RBRACE: TokenType = "}";
 pub const FUNCTION: TokenType = "FUNCTION";
 pub const LET: TokenType = "LET";
+
+pub fn lookup_ident(ident: &str) -> TokenType {
+    if let Some(&tok) = KEYWORDS.get(ident) {
+        return tok;
+    }
+    IDENT
+}
