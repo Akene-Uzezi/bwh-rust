@@ -49,6 +49,19 @@ cargo run
 # Type code, then press Ctrl+D (EOF)
 ```
 
+### Example Output
+
+```
+$ echo 'let x = 5;' | cargo run
+"LET"   let
+"IDENT" x
+"="     =
+"INT"   5
+";"     ;
+```
+
+Each line shows: `TOKEN_TYPE    literal_value`
+
 ## Usage as a Library
 
 ```rust
@@ -70,7 +83,7 @@ loop {
 ## Supported Tokens
 
 | Token | Description |
-| ------- | ------------- |
+|-------|-------------|
 | `ILLEGAL` | Unknown/invalid character |
 | `EOF` | End of file/input |
 | `IDENT` | Identifiers (variables, functions) |
@@ -103,3 +116,55 @@ The lexer uses a single-pass, character-by-character scanning approach:
 - `Lexer::new(input: Vec<u8>) -> Lexer` - Creates a new lexer
 - `lexer.next_token() -> Token` - Returns the next token
 - `token::lookup_ident(ident: &str) -> TokenType` - Maps identifiers to keywords
+
+### Token Structure
+
+```rust
+pub struct Token {
+    pub token_type: TokenType,  // &'static str
+    pub token_literal: String,  // The actual text from source
+}
+```
+
+### Keyword Handling
+
+Keywords are stored in a `LazyLock<HashMap<&str, TokenType>>` for efficient lookup:
+- `fn` → `FUNCTION`
+- `let` → `LET`
+
+All other identifiers become `IDENT`.
+
+## Testing
+
+Tests are in `src/lexer.rs` and verify the complete tokenization of a sample program:
+
+```rust
+let input = "
+    let five = 5;
+    let ten = 10;
+    let add = fn(x, y) {
+        x + y;
+    }
+    let result = add(five, ten);
+";
+```
+
+Run with `cargo test` - currently 1 test passing.
+
+## Error Handling
+
+- Invalid characters produce `ILLEGAL` tokens
+- No panic on invalid UTF-8 in identifiers/numbers (uses `unwrap()` - could be improved)
+- EOF returns empty `token_literal`
+
+## Future Improvements
+
+- [ ] Add more operators (`-`, `*`, `/`, `==`, `!=`, `<`, `>`)
+- [ ] Add string literal support
+- [ ] Add comment support (`//` and `/* */`)
+- [ ] Better error reporting with position info
+- [ ] Parser implementation (AST generation)
+
+## License
+
+MIT
