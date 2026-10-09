@@ -36,28 +36,27 @@ cargo test
 
 ## Running the Lexer
 
-The binary reads from stdin and outputs tokens:
-
-```bash
-echo 'let x = 5 + 10;' | cargo run
-```
-
-Or run interactively:
+The binary runs with a hardcoded example program:
 
 ```bash
 cargo run
-# Type code, then press Ctrl+D (EOF)
 ```
 
 ### Example Output
 
 ```
-$ echo 'let x = 5;' | cargo run
-"LET"   let
-"IDENT" x
-"="     =
-"INT"   5
-";"     ;
+$ cargo run
+LET     let
+IDENT   five
+ASSIGN  =
+INT     5
+SEMICOLON       ;
+LET     let
+IDENT   ten
+ASSIGN  =
+INT     10
+SEMICOLON       ;
+...
 ```
 
 Each line shows: `TOKEN_TYPE    literal_value`
