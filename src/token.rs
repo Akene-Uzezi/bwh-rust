@@ -1,8 +1,17 @@
 //token
 use std::collections::HashMap;
 use std::sync::LazyLock;
-static KEYWORDS: LazyLock<HashMap<&'static str, TokenType>> =
-    LazyLock::new(|| HashMap::from([("fn", FUNCTION), ("let", LET)]));
+static KEYWORDS: LazyLock<HashMap<&'static str, TokenType>> = LazyLock::new(|| {
+    HashMap::from([
+        ("fn", FUNCTION),
+        ("let", LET),
+        ("if", IF),
+        ("else", ELSE),
+        ("true", TRUE),
+        ("false", FALSE),
+        ("return", RETURN),
+    ])
+});
 pub type TokenType = &'static str;
 pub struct Token {
     pub token_type: TokenType,
@@ -36,6 +45,11 @@ pub const SEMICOLON: TokenType = ";";
 //Keywords
 pub const FUNCTION: TokenType = "FUNCTION";
 pub const LET: TokenType = "LET";
+pub const IF: TokenType = "IF";
+pub const ELSE: TokenType = "ELSE";
+pub const TRUE: TokenType = "TRUE";
+pub const FALSE: TokenType = "FALSE";
+pub const RETURN: TokenType = "RETURN";
 
 pub fn lookup_ident(ident: &str) -> TokenType {
     if let Some(&tok) = KEYWORDS.get(ident) {
