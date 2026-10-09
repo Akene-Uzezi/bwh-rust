@@ -11,16 +11,29 @@ pub struct Token {
 
 pub const ILLEGAL: TokenType = "ILLEGAL";
 pub const EOF: TokenType = "EOF";
+
 pub const IDENT: TokenType = "IDENT";
 pub const INT: TokenType = "INT";
+
+//Operators
 pub const ASSIGN: TokenType = "=";
 pub const PLUS: TokenType = "+";
-pub const COMMA: TokenType = ",";
-pub const SEMICOLON: TokenType = ";";
+pub const MINUS: TokenType = "-";
+pub const BANG: TokenType = "!";
+pub const ASTERISK: TokenType = "*";
+pub const SLASH: TokenType = "/";
+pub const LT: TokenType = "<";
+pub const GT: TokenType = ">";
+
 pub const LPAREN: TokenType = "(";
 pub const RPAREN: TokenType = ")";
 pub const LBRACE: TokenType = "{";
 pub const RBRACE: TokenType = "}";
+
+pub const COMMA: TokenType = ",";
+pub const SEMICOLON: TokenType = ";";
+
+//Keywords
 pub const FUNCTION: TokenType = "FUNCTION";
 pub const LET: TokenType = "LET";
 
