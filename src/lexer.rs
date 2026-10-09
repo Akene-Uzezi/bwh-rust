@@ -26,10 +26,27 @@ impl Lexer {
         self.position = self.read_position;
         self.read_position += 1;
     }
+    fn peek_char(&mut self) -> u8 {
+        if self.read_position >= self.input.len() {
+            0
+        } else {
+            self.input[self.read_position]
+        }
+    }
     pub fn next_token(&mut self) -> token::Token {
         self.skip_white_space();
         let tok = match self.ch {
-            b'=' => new_token(token::ASSIGN, self.ch),
+            b'=' => {
+                if self.peek_char() == b'=' {
+                    self.read_char();
+                    token::Token {
+                        token_type: token::EQ,
+                        token_literal: "==".to_string(),
+                    }
+                } else {
+                    new_token(token::ASSIGN, self.ch)
+                }
+            }
             b';' => new_token(token::SEMICOLON, self.ch),
             b'(' => new_token(token::LPAREN, self.ch),
             b')' => new_token(token::RPAREN, self.ch),
@@ -38,7 +55,17 @@ impl Lexer {
             b',' => new_token(token::COMMA, self.ch),
             b'+' => new_token(token::PLUS, self.ch),
             b'-' => new_token(token::MINUS, self.ch),
-            b'!' => new_token(token::BANG, self.ch),
+            b'!' => {
+                if self.peek_char() == b'=' {
+                    self.read_char();
+                    token::Token {
+                        token_type: token::INT,
+                        token_literal: "!=".to_string(),
+                    }
+                } else {
+                    new_token(token::BANG, self.ch)
+                }
+            }
             b'/' => new_token(token::SLASH, self.ch),
             b'*' => new_token(token::ASTERISK, self.ch),
             b'<' => new_token(token::LT, self.ch),
@@ -104,7 +131,7 @@ fn is_letter(ch: u8) -> bool {
 }
 
 fn is_digit(ch: u8) -> bool {
-    b'0' <= ch && ch <= b'9'
+    ch.is_ascii_digit()
 }
 
 #[cfg(test)]
@@ -127,6 +154,8 @@ mod tests {
             } else {
                 return false;
             }
+            10 == 10;
+            10 != 9;
         ";
 
         let tests = [
@@ -194,6 +223,14 @@ mod tests {
             (token::FALSE, "false"),
             (token::SEMICOLON, ";"),
             (token::RBRACE, "}"),
+            (token::INT, "10"),
+            (token::EQ, "=="),
+            (token::INT, "10"),
+            (token::SEMICOLON, ";"),
+            (token::INT, "10"),
+            (token::NOT_EQ, "!="),
+            (token::INT, "9"),
+            (token::SEMICOLON, ";"),
             (token::EOF, ""),
         ];
 

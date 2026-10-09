@@ -33,6 +33,8 @@ pub const ASTERISK: TokenType = "*";
 pub const SLASH: TokenType = "/";
 pub const LT: TokenType = "<";
 pub const GT: TokenType = ">";
+pub const EQ: TokenType = "==";
+pub const NOT_EQ: TokenType = "!=";
 
 pub const LPAREN: TokenType = "(";
 pub const RPAREN: TokenType = ")";
