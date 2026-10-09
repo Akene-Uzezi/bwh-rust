@@ -59,7 +59,7 @@ impl Lexer {
                 if self.peek_char() == b'=' {
                     self.read_char();
                     token::Token {
-                        token_type: token::INT,
+                        token_type: token::NOT_EQ,
                         token_literal: "!=".to_string(),
                     }
                 } else {
