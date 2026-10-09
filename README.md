@@ -17,7 +17,7 @@ This project implements a basic lexical analyzer (lexer) that converts source co
 ```
 src/
 ├── lib.rs      # Library entry point, exports lexer and token modules
-├── main.rs     # Binary entry point (currently prints "Hello, world!")
+├── main.rs     # Binary entry point (demo CLI)
 ├── token.rs    # Token definitions and types
 └── lexer.rs    # Lexer implementation with tests
 ```
@@ -34,7 +34,22 @@ cargo build
 cargo test
 ```
 
-## Usage
+## Running the Lexer
+
+The binary reads from stdin and outputs tokens:
+
+```bash
+echo 'let x = 5 + 10;' | cargo run
+```
+
+Or run interactively:
+
+```bash
+cargo run
+# Type code, then press Ctrl+D (EOF)
+```
+
+## Usage as a Library
 
 ```rust
 use bwh_rust::lexer::Lexer;
@@ -55,7 +70,7 @@ loop {
 ## Supported Tokens
 
 | Token | Description |
-|-------|-------------|
+| ------- | ------------- |
 | `ILLEGAL` | Unknown/invalid character |
 | `EOF` | End of file/input |
 | `IDENT` | Identifiers (variables, functions) |
@@ -71,6 +86,20 @@ loop {
 | `FUNCTION` | `fn` keyword |
 | `LET` | `let` keyword |
 
-## License
+## Implementation Details
 
-MIT
+### Lexer Algorithm
+
+The lexer uses a single-pass, character-by-character scanning approach:
+
+1. **Input**: Takes a `Vec<u8>` (byte slice of source code)
+2. **Position Tracking**: Maintains `position` (current char) and `read_position` (next char)
+3. **Token Generation**: `next_token()` returns the next token, skipping whitespace
+4. **Identifier/Keyword Recognition**: Reads alphabetic sequences, checks against keyword map
+5. **Number Recognition**: Reads consecutive digits
+
+### Key Functions
+
+- `Lexer::new(input: Vec<u8>) -> Lexer` - Creates a new lexer
+- `lexer.next_token() -> Token` - Returns the next token
+- `token::lookup_ident(ident: &str) -> TokenType` - Maps identifiers to keywords
