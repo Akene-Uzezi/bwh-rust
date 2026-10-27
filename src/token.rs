@@ -13,6 +13,8 @@ static KEYWORDS: LazyLock<HashMap<&'static str, TokenType>> = LazyLock::new(|| {
     ])
 });
 pub type TokenType = &'static str;
+
+#[derive(Debug)]
 pub struct Token {
     pub token_type: TokenType,
     pub token_literal: String,
