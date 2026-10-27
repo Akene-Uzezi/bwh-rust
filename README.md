@@ -1,25 +1,27 @@
 # bwh-rust
 
-A simple lexer/tokenizer written in Rust, inspired by the "Writing an Interpreter in Go" book.
+A lexer and REPL for the "badwhipp" language, written in Rust, inspired by the "Writing an Interpreter in Go" book.
 
 ## Overview
 
-This project implements a basic lexical analyzer (lexer) that converts source code into tokens. It's a learning project demonstrating fundamental compiler concepts in Rust.
+This project implements a lexical analyzer (lexer) that converts source code into tokens, plus an interactive REPL (Read-Eval-Print Loop) for experimenting with the language. It's a learning project demonstrating fundamental compiler concepts in Rust.
 
 ## Features
 
-- **Token Types**: Supports keywords (`LET`, `FUNCTION`), identifiers (`IDENT`), integers (`INT`), operators (`+`, `=`), punctuation (`;`, `,`, `(`, `)`, `{`, `}`), and special tokens (`ILLEGAL`, `EOF`)
+- **Token Types**: Supports keywords (`LET`, `FUNCTION`, `IF`, `ELSE`, `TRUE`, `FALSE`, `RETURN`), identifiers (`IDENT`), integers (`INT`), operators (`+`, `-`, `*`, `/`, `=`, `==`, `!=`, `<`, `>`, `!`), punctuation (`;`, `,`, `(`, `)`, `{`, `}`), and special tokens (`ILLEGAL`, `EOF`)
 - **Lexer**: Character-by-character scanning with position tracking
-- **Tests**: Unit tests verifying token recognition
+- **REPL**: Interactive command-line interface for tokenizing input in real-time
+- **Tests**: Unit tests verifying token recognition for a comprehensive sample program
 
 ## Project Structure
 
 ```
 src/
-├── lib.rs      # Library entry point, exports lexer and token modules
-├── main.rs     # Binary entry point (demo CLI)
+├── lib.rs      # Library entry point, exports lexer, repl, and token modules
+├── main.rs     # Binary entry point (starts REPL)
 ├── token.rs    # Token definitions and types
-└── lexer.rs    # Lexer implementation with tests
+├── lexer.rs    # Lexer implementation with tests
+└── repl.rs     # REPL implementation
 ```
 
 ## Building
@@ -34,32 +36,45 @@ cargo build
 cargo test
 ```
 
-## Running the Lexer
+## Running the REPL
 
-The binary runs with a hardcoded example program:
+The binary starts an interactive REPL:
 
 ```bash
 cargo run
 ```
 
-### Example Output
+### Example REPL Session
 
 ```
 $ cargo run
-LET     let
-IDENT   five
-ASSIGN  =
-INT     5
-SEMICOLON       ;
-LET     let
-IDENT   ten
-ASSIGN  =
-INT     10
-SEMICOLON       ;
-...
+Hello! This is the badwhipp language implemented in rust
+Feel free to type in commands
+>> let x = 5;
+Token { token_type: "LET", token_literal: "let" }
+Token { token_type: "IDENT", token_literal: "x" }
+Token { token_type: "=", token_literal: "=" }
+Token { token_type: "INT", token_literal: "5" }
+Token { token_type: ";", token_literal: ";" }
+>> fn add(a, b) { return a + b; }
+Token { token_type: "FUNCTION", token_literal: "fn" }
+Token { token_type: "IDENT", token_literal: "add" }
+Token { token_type: "(", token_literal: "(" }
+Token { token_type: "IDENT", token_literal: "a" }
+Token { token_type: ",", token_literal: "," }
+Token { token_type: "IDENT", token_literal: "b" }
+Token { token_type: ")", token_literal: ")" }
+Token { token_type: "{", token_literal: "{" }
+Token { token_type: "RETURN", token_literal: "return" }
+Token { token_type: "IDENT", token_literal: "a" }
+Token { token_type: "+", token_literal: "+" }
+Token { token_type: "IDENT", token_literal: "b" }
+Token { token_type: ";", token_literal: ";" }
+Token { token_type: "}", token_literal: "}" }
+>> 
 ```
 
-Each line shows: `TOKEN_TYPE    literal_value`
+Press `Ctrl+D` (EOF) to exit.
 
 ## Usage as a Library
 
@@ -89,6 +104,14 @@ loop {
 | `INT` | Integer literals |
 | `ASSIGN` | `=` |
 | `PLUS` | `+` |
+| `MINUS` | `-` |
+| `BANG` | `!` |
+| `ASTERISK` | `*` |
+| `SLASH` | `/` |
+| `LT` | `<` |
+| `GT` | `>` |
+| `EQ` | `==` |
+| `NOT_EQ` | `!=` |
 | `COMMA` | `,` |
 | `SEMICOLON` | `;` |
 | `LPAREN` | `(` |
@@ -97,6 +120,11 @@ loop {
 | `RBRACE` | `}` |
 | `FUNCTION` | `fn` keyword |
 | `LET` | `let` keyword |
+| `IF` | `if` keyword |
+| `ELSE` | `else` keyword |
+| `TRUE` | `true` keyword |
+| `FALSE` | `false` keyword |
+| `RETURN` | `return` keyword |
 
 ## Implementation Details
 
@@ -109,6 +137,7 @@ The lexer uses a single-pass, character-by-character scanning approach:
 3. **Token Generation**: `next_token()` returns the next token, skipping whitespace
 4. **Identifier/Keyword Recognition**: Reads alphabetic sequences, checks against keyword map
 5. **Number Recognition**: Reads consecutive digits
+6. **Multi-character Operators**: Handles `==` and `!=` by peeking ahead
 
 ### Key Functions
 
@@ -130,12 +159,32 @@ pub struct Token {
 Keywords are stored in a `LazyLock<HashMap<&str, TokenType>>` for efficient lookup:
 - `fn` → `FUNCTION`
 - `let` → `LET`
+- `if` → `IF`
+- `else` → `ELSE`
+- `true` → `TRUE`
+- `false` → `FALSE`
+- `return` → `RETURN`
 
 All other identifiers become `IDENT`.
 
+### REPL
+
+The REPL (`repl.rs`) provides an interactive loop:
+- Reads lines from stdin
+- Tokenizes each line using the lexer
+- Prints each token until EOF
+- Exits on `Ctrl+D`
+
 ## Testing
 
-Tests are in `src/lexer.rs` and verify the complete tokenization of a sample program:
+Tests are in `src/lexer.rs` and verify the complete tokenization of a sample program including:
+- Variable declarations (`let`)
+- Function definitions (`fn`)
+- Function calls
+- Arithmetic operations
+- Comparison operators (`<`, `>`, `==`, `!=`)
+- Boolean logic (`!`, `true`, `false`)
+- Control flow (`if`, `else`, `return`)
 
 ```rust
 let input = "
@@ -145,6 +194,15 @@ let input = "
         x + y;
     }
     let result = add(five, ten);
+    !-/*5;
+    5 < 10 > 5;
+    if (5 < 10) {
+        return true;
+    } else {
+        return false;
+    }
+    10 == 10;
+    10 != 9;
 ";
 ```
 
@@ -158,11 +216,11 @@ Run with `cargo test` - currently 1 test passing.
 
 ## Future Improvements
 
-- [ ] Add more operators (`-`, `*`, `/`, `==`, `!=`, `<`, `>`)
 - [ ] Add string literal support
 - [ ] Add comment support (`//` and `/* */`)
 - [ ] Better error reporting with position info
 - [ ] Parser implementation (AST generation)
+- [ ] Interpreter/evaluator
 
 ## License
 
