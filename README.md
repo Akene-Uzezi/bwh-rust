@@ -1,15 +1,17 @@
 # bwh-rust
 
-A lexer and REPL for the "badwhipp" language, written in Rust, inspired by the "Writing an Interpreter in Go" book.
+A lexer, parser, and REPL for the "badwhipp" language, written in Rust, inspired by the "Writing an Interpreter in Go" book.
 
 ## Overview
 
-This project implements a lexical analyzer (lexer) that converts source code into tokens, plus an interactive REPL (Read-Eval-Print Loop) for experimenting with the language. It's a learning project demonstrating fundamental compiler concepts in Rust.
+This project implements a lexical analyzer (lexer) that converts source code into tokens, a parser that builds an Abstract Syntax Tree (AST), and an interactive REPL (Read-Eval-Print Loop) for experimenting with the language. It's a learning project demonstrating fundamental compiler concepts in Rust.
 
 ## Features
 
 - **Token Types**: Supports keywords (`LET`, `FUNCTION`, `IF`, `ELSE`, `TRUE`, `FALSE`, `RETURN`), identifiers (`IDENT`), integers (`INT`), operators (`+`, `-`, `*`, `/`, `=`, `==`, `!=`, `<`, `>`, `!`), punctuation (`;`, `,`, `(`, `)`, `{`, `}`), and special tokens (`ILLEGAL`, `EOF`)
 - **Lexer**: Character-by-character scanning with position tracking
+- **Parser**: Recursive descent parser building an AST (work in progress)
+- **AST**: Abstract Syntax Tree nodes for statements and expressions
 - **REPL**: Interactive command-line interface for tokenizing input in real-time
 - **Tests**: Unit tests verifying token recognition for a comprehensive sample program
 
@@ -17,10 +19,12 @@ This project implements a lexical analyzer (lexer) that converts source code int
 
 ```
 src/
-├── lib.rs      # Library entry point, exports lexer, repl, and token modules
+├── lib.rs      # Library entry point, exports all modules
 ├── main.rs     # Binary entry point (starts REPL)
 ├── token.rs    # Token definitions and types
 ├── lexer.rs    # Lexer implementation with tests
+├── ast.rs      # Abstract Syntax Tree node definitions
+├── parser.rs   # Parser implementation (stub)
 └── repl.rs     # REPL implementation
 ```
 
@@ -167,6 +171,23 @@ Keywords are stored in a `LazyLock<HashMap<&str, TokenType>>` for efficient look
 
 All other identifiers become `IDENT`.
 
+### AST (Abstract Syntax Tree)
+
+The AST module defines the structure for parsed programs:
+
+- **Program**: Root node containing a vector of statements
+- **Statement Trait**: Implemented by `LetStatement`
+- **Expression Trait**: Implemented by `Identifier`
+- **LetStatement**: Variable declarations with name and value expression
+- **Identifier**: Variable/function names
+
+### Parser
+
+The parser uses a recursive descent approach (currently a stub):
+
+- `Parser::new(lexer: Lexer) -> Parser` - Creates a new parser
+- `parser.parse_program() -> Option<Program>` - Parses a complete program
+
 ### REPL
 
 The REPL (`repl.rs`) provides an interactive loop:
@@ -219,8 +240,9 @@ Run with `cargo test` - currently 1 test passing.
 - [ ] Add string literal support
 - [ ] Add comment support (`//` and `/* */`)
 - [ ] Better error reporting with position info
-- [ ] Parser implementation (AST generation)
+- [ ] Complete parser implementation (AST generation)
 - [ ] Interpreter/evaluator
+- [ ] Support for more operators and expressions
 
 ## License
 
