@@ -9,3 +9,17 @@ pub trait Statement: Node {
 pub trait Expression: Node {
     fn expression_node(&self);
 }
+
+pub struct Program {
+    pub statements: Vec<Box<dyn Statement>>,
+}
+
+impl Node for Program {
+    fn token_literal(&self) -> String {
+        if !self.statements.is_empty() {
+            self.statements[0].token_literal()
+        } else {
+            String::new()
+        }
+    }
+}
