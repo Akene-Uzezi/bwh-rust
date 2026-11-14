@@ -27,4 +27,21 @@ impl Parser {
 }
 
 #[cfg(test)]
-mod parsertest {}
+mod parsertest {
+    use super::*;
+
+    #[test]
+    fn test_let_statement() {
+        let input = String::from(
+            "
+    	    let x = 5;
+          let y = 10;
+    	    let foobar = 838383;
+        ",
+        );
+        let input_as_bytes = input.as_bytes();
+        let l = lexer::Lexer::new(input_as_bytes.to_vec());
+        let mut p = Parser::new(l);
+        let program = p.parse_program();
+    }
+}
