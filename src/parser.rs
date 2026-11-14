@@ -42,6 +42,12 @@ mod parsertest {
         let input_as_bytes = input.as_bytes();
         let l = lexer::Lexer::new(input_as_bytes.to_vec());
         let mut p = Parser::new(l);
-        let program = p.parse_program();
+        let program = p.parse_program().expect("parse_program returned None");
+        assert_eq!(
+            program.statements.len(),
+            3,
+            "program.statements does not contain 3 statements got={}",
+            program.statements.len()
+        );
     }
 }
