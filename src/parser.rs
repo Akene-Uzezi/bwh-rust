@@ -25,3 +25,6 @@ impl Parser {
         None
     }
 }
+
+#[cfg(test)]
+mod parsertest {}
