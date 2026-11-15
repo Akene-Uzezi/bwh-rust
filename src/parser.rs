@@ -49,5 +49,20 @@ mod parsertest {
             "program.statements does not contain 3 statements got={}",
             program.statements.len()
         );
+        let tests = [("x"), ("y"), ("foobar")];
+        for (i, expected_identifier) in tests.iter().enumerate() {
+            let stmt = &program.statements[i];
+            assert!(test_statement(stmt, expected_identifier.to_string()));
+        }
+    }
+
+    fn test_statement(s: &Box<dyn ast::Statement>, name: String) -> bool {
+        if s.token_literal() != "let" {
+            println!("s.token_literal not 'let' got={}", s.token_literal());
+            return false;
+        }
+
+        let let_stmt: ast::LetStatement;
+        return false;
     }
 }
