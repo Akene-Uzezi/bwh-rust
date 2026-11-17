@@ -34,8 +34,8 @@ pub struct Identifier {
 
 pub struct LetStatement {
     pub token: token::Token,
-    pub name: Identifier,
-    pub value: Box<dyn Expression>,
+    pub name: Option<Identifier>,
+    pub value: Option<Box<dyn Expression>>,
 }
 
 impl Node for LetStatement {

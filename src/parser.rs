@@ -22,6 +22,17 @@ impl Parser {
     }
 
     pub fn parse_program(&mut self) -> Option<ast::Program> {
+        let mut stmt = ast::LetStatement {
+            token: self.cur_token.clone(),
+            name: None,
+            value: None,
+        };
+
+        stmt.name = ast::Identifier {
+            token: self.cur_token.clone(),
+            value: self.cur_token.token_literal,
+        };
+
         None
     }
 }
