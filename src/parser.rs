@@ -28,6 +28,8 @@ impl Parser {
 
 #[cfg(test)]
 mod parsertest {
+    use crate::ast::Node;
+
     use super::*;
 
     #[test]
@@ -62,7 +64,28 @@ mod parsertest {
             return false;
         }
 
-        let let_stmt: ast::LetStatement;
-        return false;
+        let Some(let_stmt) = s.as_any().downcast_ref::<ast::LetStatement>() else {
+            println!("s not ast::LetStatement");
+            return false;
+        };
+
+        if let_stmt.name.value != name {
+            println!(
+                "s.name not '{}'. got={}",
+                name,
+                let_stmt.name.token_literal()
+            );
+            return false;
+        }
+
+        if let_stmt.name.token_literal() != name {
+            println!(
+                "s.name not '{}'. got={}",
+                name,
+                let_stmt.name.token_literal()
+            );
+            return false;
+        }
+        true
     }
 }
