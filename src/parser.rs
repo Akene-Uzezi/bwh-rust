@@ -21,19 +21,67 @@ impl Parser {
         }
     }
 
+    fn next_token(&mut self) {
+        self.cur_token = self.peek_token.clone();
+        self.peek_token = self.l.next_token();
+    }
+
     pub fn parse_program(&mut self) -> Option<ast::Program> {
-        let mut stmt = ast::LetStatement {
+        let mut program = ast::Program {
+            statements: Vec::new(),
+        };
+
+        while self.cur_token.token_type != token::EOF {
+            if let Some(stmt) = self.parse_statement() {
+                program.statements.push(stmt);
+            }
+            self.next_token();
+        }
+
+        Some(program)
+    }
+
+    fn parse_statement(&mut self) -> Option<Box<dyn ast::Statement>> {
+        match self.cur_token.token_type {
+            token::LET => self.parse_let_statement(),
+            _ => None,
+        }
+    }
+
+    fn parse_let_statement(&mut self) -> Option<Box<dyn ast::Statement>> {
+        let token = self.cur_token.clone();
+
+        if !self.expect_peek(token::IDENT) {
+            return None;
+        }
+
+        let name = ast::Identifier {
             token: self.cur_token.clone(),
-            name: None,
+            value: self.cur_token.token_literal.clone(),
+        };
+
+        if !self.expect_peek(token::ASSIGN) {
+            return None;
+        }
+
+        while self.cur_token.token_type != token::SEMICOLON && self.cur_token.token_type != token::EOF {
+            self.next_token();
+        }
+
+        Some(Box::new(ast::LetStatement {
+            token,
+            name: Some(name),
             value: None,
-        };
+        }))
+    }
 
-        stmt.name = ast::Identifier {
-            token: self.cur_token.clone(),
-            value: self.cur_token.token_literal,
-        };
-
-        None
+    fn expect_peek(&mut self, t: token::TokenType) -> bool {
+        if self.peek_token.token_type == t {
+            self.next_token();
+            true
+        } else {
+            false
+        }
     }
 }
 
@@ -80,20 +128,25 @@ mod parsertest {
             return false;
         };
 
-        if let_stmt.name.value != name {
+        let Some(ident) = &let_stmt.name else {
+            println!("let_stmt.name is None");
+            return false;
+        };
+
+        if ident.value != name {
             println!(
                 "s.name not '{}'. got={}",
                 name,
-                let_stmt.name.token_literal()
+                ident.token_literal()
             );
             return false;
         }
 
-        if let_stmt.name.token_literal() != name {
+        if ident.token_literal() != name {
             println!(
                 "s.name not '{}'. got={}",
                 name,
-                let_stmt.name.token_literal()
+                ident.token_literal()
             );
             return false;
         }
