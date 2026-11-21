@@ -38,9 +38,28 @@ pub struct LetStatement {
     pub value: Option<Box<dyn Expression>>,
 }
 
+pub struct ReturnStatement {
+    pub token: token::Token,
+    pub return_value: Option<Box<dyn Expression>>,
+}
+
 impl Node for LetStatement {
     fn token_literal(&self) -> String {
         self.token.token_literal.clone()
+    }
+}
+
+impl Node for ReturnStatement {
+    fn token_literal(&self) -> String {
+        self.token.token_literal.clone()
+    }
+}
+
+impl Statement for ReturnStatement {
+    fn statement_node(&self) {}
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
