@@ -5,6 +5,8 @@ use crate::token;
 pub struct Parser {
     l: lexer::Lexer,
 
+    errors: Option<Vec<String>>,
+
     cur_token: token::Token,
     peek_token: token::Token,
 }
@@ -16,9 +18,22 @@ impl Parser {
 
         Parser {
             l,
+            errors: None,
             cur_token,
             peek_token,
         }
+    }
+
+    pub fn errors(self) -> Vec<String> {
+        self.errors.expect("parser::errors returned None")
+    }
+
+    fn peek_error(&mut self, t: token::TokenType) {
+        let message = format!(
+            "expected next token to be {:?}, got {:?} instead",
+            t, self.peek_token.token_type
+        );
+        self.errors.get_or_insert_with(Vec::new).push(message);
     }
 
     fn next_token(&mut self) {
@@ -64,7 +79,9 @@ impl Parser {
             return None;
         }
 
-        while self.cur_token.token_type != token::SEMICOLON && self.cur_token.token_type != token::EOF {
+        while self.cur_token.token_type != token::SEMICOLON
+            && self.cur_token.token_type != token::EOF
+        {
             self.next_token();
         }
 
@@ -80,6 +97,7 @@ impl Parser {
             self.next_token();
             true
         } else {
+            self.peek_error(t);
             false
         }
     }
@@ -95,15 +113,16 @@ mod parsertest {
     fn test_let_statement() {
         let input = String::from(
             "
-    	    let x = 5;
-          let y = 10;
-    	    let foobar = 838383;
+    	    let x  5;
+          let  = 10;
+    	    let  = 838383;
         ",
         );
         let input_as_bytes = input.as_bytes();
         let l = lexer::Lexer::new(input_as_bytes.to_vec());
         let mut p = Parser::new(l);
         let program = p.parse_program().expect("parse_program returned None");
+        check_parser_errors(&p);
         assert_eq!(
             program.statements.len(),
             3,
@@ -115,6 +134,21 @@ mod parsertest {
             let stmt = &program.statements[i];
             assert!(test_statement(stmt, expected_identifier.to_string()));
         }
+    }
+
+    fn check_parser_errors(p: &Parser) {
+        let Some(errors) = &p.errors else {
+            return;
+        };
+
+        if errors.is_empty() {
+            return;
+        }
+        eprintln!("Parser has {} errors", errors.iter().len());
+        for msg in errors {
+            eprintln!("parser error: {}", msg);
+        }
+        panic!("Parser has encountered {} error(s)", errors.len());
     }
 
     fn test_statement(s: &Box<dyn ast::Statement>, name: String) -> bool {
@@ -134,22 +168,15 @@ mod parsertest {
         };
 
         if ident.value != name {
-            println!(
-                "s.name not '{}'. got={}",
-                name,
-                ident.token_literal()
-            );
+            println!("s.name not '{}'. got={}", name, ident.token_literal());
             return false;
         }
 
         if ident.token_literal() != name {
-            println!(
-                "s.name not '{}'. got={}",
-                name,
-                ident.token_literal()
-            );
+            println!("s.name not '{}'. got={}", name, ident.token_literal());
             return false;
         }
         true
     }
 }
+
