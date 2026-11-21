@@ -59,6 +59,7 @@ impl Parser {
     fn parse_statement(&mut self) -> Option<Box<dyn ast::Statement>> {
         match self.cur_token.token_type {
             token::LET => self.parse_let_statement(),
+            token::RETURN => self.parse_return_statement(),
             _ => None,
         }
     }
@@ -89,6 +90,23 @@ impl Parser {
             token,
             name: Some(name),
             value: None,
+        }))
+    }
+
+    fn parse_return_statement(&mut self) -> Option<Box<dyn ast::Statement>> {
+        let token = self.cur_token.clone();
+
+        self.next_token();
+
+        while self.cur_token.token_type != token::SEMICOLON
+            && self.cur_token.token_type != token::EOF
+        {
+            self.next_token();
+        }
+
+        Some(Box::new(ast::ReturnStatement {
+            token,
+            return_value: None,
         }))
     }
 
@@ -208,15 +226,15 @@ mod parsertest {
         }
 
         for statment in program.statements.iter().enumerate() {
-            let Some(returnStmt) = statment.1.as_any().downcast_ref::<ast::ReturnStatement>()
+            let Some(return_stmt) = statment.1.as_any().downcast_ref::<ast::ReturnStatement>()
             else {
                 println!("stmt not ast::ReturnStatement");
                 continue;
             };
-            if returnStmt.token_literal() != "return" {
+            if return_stmt.token_literal() != "return" {
                 eprintln!(
                     "returnStmt.token_literal not 'return', got {}",
-                    returnStmt.token_literal()
+                    return_stmt.token_literal()
                 );
                 panic!("returnStmt.token_literal not 'return'")
             }
