@@ -10,10 +10,10 @@ This project implements a lexical analyzer (lexer) that converts source code int
 
 - **Token Types**: Supports keywords (`LET`, `FUNCTION`, `IF`, `ELSE`, `TRUE`, `FALSE`, `RETURN`), identifiers (`IDENT`), integers (`INT`), operators (`+`, `-`, `*`, `/`, `=`, `==`, `!=`, `<`, `>`, `!`), punctuation (`;`, `,`, `(`, `)`, `{`, `}`), and special tokens (`ILLEGAL`, `EOF`)
 - **Lexer**: Character-by-character scanning with position tracking
-- **Parser**: Recursive descent parser building an AST (work in progress)
+- **Parser**: Recursive descent parser that builds an AST with let statement support
 - **AST**: Abstract Syntax Tree nodes for statements and expressions
 - **REPL**: Interactive command-line interface for tokenizing input in real-time
-- **Tests**: Unit tests verifying token recognition for a comprehensive sample program
+- **Tests**: Unit tests for lexer (passing) and parser (failing - test input needs fixing)
 
 ## Project Structure
 
@@ -24,7 +24,7 @@ src/
 ├── token.rs    # Token definitions and types
 ├── lexer.rs    # Lexer implementation with tests
 ├── ast.rs      # Abstract Syntax Tree node definitions
-├── parser.rs   # Parser implementation (stub)
+├── parser.rs   # Parser implementation with let statement parsing
 └── repl.rs     # REPL implementation
 ```
 
@@ -39,6 +39,8 @@ cargo build
 ```bash
 cargo test
 ```
+
+Currently 1 test passing (lexer), 1 test failing (parser - test input has malformed let statements).
 
 ## Running the REPL
 
@@ -183,10 +185,15 @@ The AST module defines the structure for parsed programs:
 
 ### Parser
 
-The parser uses a recursive descent approach (currently a stub):
+The parser uses a recursive descent approach:
 
 - `Parser::new(lexer: Lexer) -> Parser` - Creates a new parser
 - `parser.parse_program() -> Option<Program>` - Parses a complete program
+- `parser.parse_statement()` - Dispatches to statement-specific parsers
+- `parser.parse_let_statement()` - Parses `let` variable declarations
+- Error tracking via `errors` field
+
+Currently parses `let` statements. Other statement types (return, expression, etc.) are not yet implemented.
 
 ### REPL
 
@@ -198,7 +205,11 @@ The REPL (`repl.rs`) provides an interactive loop:
 
 ## Testing
 
-Tests are in `src/lexer.rs` and verify the complete tokenization of a sample program including:
+Tests are in `src/lexer.rs` and `src/parser.rs`:
+
+### Lexer Test (Passing)
+
+Verifies the complete tokenization of a sample program including:
 - Variable declarations (`let`)
 - Function definitions (`fn`)
 - Function calls
@@ -207,40 +218,31 @@ Tests are in `src/lexer.rs` and verify the complete tokenization of a sample pro
 - Boolean logic (`!`, `true`, `false`)
 - Control flow (`if`, `else`, `return`)
 
+### Parser Test (Failing)
+
+The parser test in `src/parser.rs` tests let statement parsing but uses malformed input:
 ```rust
-let input = "
-    let five = 5;
-    let ten = 10;
-    let add = fn(x, y) {
-        x + y;
-    }
-    let result = add(five, ten);
-    !-/*5;
-    5 < 10 > 5;
-    if (5 < 10) {
-        return true;
-    } else {
-        return false;
-    }
-    10 == 10;
-    10 != 9;
-";
+let x  5;      // missing '='
+let  = 10;     // missing identifier
+let  = 838383; // missing identifier
 ```
 
-Run with `cargo test` - currently 1 test passing.
+This needs to be fixed to test valid let statements like `let x = 5;`.
 
 ## Error Handling
 
 - Invalid characters produce `ILLEGAL` tokens
+- Parser tracks errors during parsing
 - No panic on invalid UTF-8 in identifiers/numbers (uses `unwrap()` - could be improved)
 - EOF returns empty `token_literal`
 
 ## Future Improvements
 
+- [ ] Fix parser test with valid let statement input
 - [ ] Add string literal support
 - [ ] Add comment support (`//` and `/* */`)
 - [ ] Better error reporting with position info
-- [ ] Complete parser implementation (AST generation)
+- [ ] Complete parser implementation (return statements, expressions, function calls, etc.)
 - [ ] Interpreter/evaluator
 - [ ] Support for more operators and expressions
 
