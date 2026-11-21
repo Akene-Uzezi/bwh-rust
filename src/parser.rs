@@ -113,9 +113,9 @@ mod parsertest {
     fn test_let_statement() {
         let input = String::from(
             "
-    	    let x  5;
-          let  = 10;
-    	    let  = 838383;
+    	    let x = 5;
+          let y = 10;
+    	    let foobar = 838383;
         ",
         );
         let input_as_bytes = input.as_bytes();
@@ -178,5 +178,48 @@ mod parsertest {
         }
         true
     }
-}
 
+    #[test]
+    fn test_return_statement() {
+        let input = String::from(
+            "
+            return 5;
+            return 10;
+            return 9933322;
+        ",
+        );
+
+        let inputbytes = &input.as_bytes();
+        let l = lexer::Lexer::new(inputbytes.to_vec());
+        let mut p = Parser::new(l);
+        let programoption = p.parse_program();
+        check_parser_errors(&p);
+
+        let Some(program) = &programoption else {
+            return;
+        };
+
+        if program.statements.iter().len() != 3 {
+            eprintln!(
+                "program.statements does not contain 3 statments got {}",
+                program.statements.iter().len()
+            );
+            panic!("program.statements does not contain 3 statements");
+        }
+
+        for statment in program.statements.iter().enumerate() {
+            let Some(returnStmt) = statment.1.as_any().downcast_ref::<ast::ReturnStatement>()
+            else {
+                println!("stmt not ast::ReturnStatement");
+                continue;
+            };
+            if returnStmt.token_literal() != "return" {
+                eprintln!(
+                    "returnStmt.token_literal not 'return', got {}",
+                    returnStmt.token_literal()
+                );
+                panic!("returnStmt.token_literal not 'return'")
+            }
+        }
+    }
+}
