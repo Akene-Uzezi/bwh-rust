@@ -13,7 +13,7 @@ This project implements a lexical analyzer (lexer) that converts source code int
 - **Parser**: Recursive descent parser that builds an AST with let statement support
 - **AST**: Abstract Syntax Tree nodes for statements and expressions
 - **REPL**: Interactive command-line interface for tokenizing input in real-time
-- **Tests**: Unit tests for lexer (passing) and parser (failing - test input needs fixing)
+- **Tests**: Unit tests for lexer and parser (all passing)
 
 ## Project Structure
 
@@ -40,7 +40,7 @@ cargo build
 cargo test
 ```
 
-Currently 1 test passing (lexer), 1 test failing (parser - test input has malformed let statements).
+All 3 tests passing (lexer, parser let statements, parser return statements).
 
 ## Running the REPL
 
@@ -218,16 +218,21 @@ Verifies the complete tokenization of a sample program including:
 - Boolean logic (`!`, `true`, `false`)
 - Control flow (`if`, `else`, `return`)
 
-### Parser Test (Failing)
+### Parser Test (Passing)
 
-The parser test in `src/parser.rs` tests let statement parsing but uses malformed input:
+The parser test in `src/parser.rs` tests let statement and return statement parsing with valid input:
 ```rust
-let x  5;      // missing '='
-let  = 10;     // missing identifier
-let  = 838383; // missing identifier
+let x = 5;
+let y = 10;
+let foobar = 838383;
 ```
 
-This needs to be fixed to test valid let statements like `let x = 5;`.
+And return statements:
+```rust
+return 5;
+return 10;
+return 9933322;
+```
 
 ## Error Handling
 
@@ -238,7 +243,7 @@ This needs to be fixed to test valid let statements like `let x = 5;`.
 
 ## Future Improvements
 
-- [ ] Fix parser test with valid let statement input
+- [x] Fix parser test with valid let statement input
 - [ ] Add string literal support
 - [ ] Add comment support (`//` and `/* */`)
 - [ ] Better error reporting with position info
