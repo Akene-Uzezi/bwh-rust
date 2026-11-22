@@ -177,7 +177,7 @@ mod asttest {
                 })),
             })],
         };
-        let expected = "let myVar = anotherVar";
+        let expected = "let myVar = anotherVar;";
         assert_eq!(program.string(), expected)
     }
 }
