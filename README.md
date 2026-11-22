@@ -10,22 +10,22 @@ This project implements a lexical analyzer (lexer) that converts source code int
 
 - **Token Types**: Supports keywords (`LET`, `FUNCTION`, `IF`, `ELSE`, `TRUE`, `FALSE`, `RETURN`), identifiers (`IDENT`), integers (`INT`), operators (`+`, `-`, `*`, `/`, `=`, `==`, `!=`, `<`, `>`, `!`), punctuation (`;`, `,`, `(`, `)`, `{`, `}`), and special tokens (`ILLEGAL`, `EOF`)
 - **Lexer**: Character-by-character scanning with position tracking
-- **Parser**: Recursive descent parser that builds an AST with let statement support
-- **AST**: Abstract Syntax Tree nodes for statements and expressions
+- **Parser**: Recursive descent parser that builds an AST with let statement and return statement support
+- **AST**: Abstract Syntax Tree nodes for statements (LetStatement, ReturnStatement, ExpressionStatement) and expressions (Identifier)
 - **REPL**: Interactive command-line interface for tokenizing input in real-time
-- **Tests**: Unit tests for lexer and parser (all passing)
+- **Tests**: Unit tests for lexer, parser, and AST (all 4 tests passing)
 
 ## Project Structure
 
 ```
 src/
-├── lib.rs      # Library entry point, exports all modules
-├── main.rs     # Binary entry point (starts REPL)
-├── token.rs    # Token definitions and types
-├── lexer.rs    # Lexer implementation with tests
-├── ast.rs      # Abstract Syntax Tree node definitions
-├── parser.rs   # Parser implementation with let statement parsing
-└── repl.rs     # REPL implementation
+├── lib.rs       # Library entry point, exports all modules
+├── main.rs      # Binary entry point (starts REPL)
+├── token.rs     # Token definitions and types
+├── lexer.rs     # Lexer implementation with tests
+├── ast.rs       # Abstract Syntax Tree node definitions
+├── parser.rs    # Parser implementation with let/return statement parsing
+└── repl.rs      # REPL implementation
 ```
 
 ## Building
@@ -40,7 +40,7 @@ cargo build
 cargo test
 ```
 
-All 3 tests passing (lexer, parser let statements, parser return statements).
+All 4 tests passing (lexer, AST string representation, parser let statements, parser return statements).
 
 ## Running the REPL
 
@@ -98,6 +98,19 @@ loop {
     }
     println!("{:?}: {}", tok.token_type, tok.token_literal);
 }
+```
+
+### Using the Parser
+
+```rust
+use bwh_rust::lexer::Lexer;
+use bwh_rust::parser::Parser;
+
+let input = "let x = 5; return 10;";
+let l = Lexer::new(input.as_bytes().to_vec());
+let mut p = Parser::new(l);
+let program = p.parse_program().expect("parse failed");
+println!("{}", program.string());
 ```
 
 ## Supported Tokens
@@ -178,9 +191,11 @@ All other identifiers become `IDENT`.
 The AST module defines the structure for parsed programs:
 
 - **Program**: Root node containing a vector of statements
-- **Statement Trait**: Implemented by `LetStatement`
+- **Statement Trait**: Implemented by `LetStatement`, `ReturnStatement`, `ExpressionStatement`
 - **Expression Trait**: Implemented by `Identifier`
 - **LetStatement**: Variable declarations with name and value expression
+- **ReturnStatement**: Return statements with optional return value
+- **ExpressionStatement**: Expression statements (not yet fully parsed)
 - **Identifier**: Variable/function names
 
 ### Parser
@@ -191,9 +206,10 @@ The parser uses a recursive descent approach:
 - `parser.parse_program() -> Option<Program>` - Parses a complete program
 - `parser.parse_statement()` - Dispatches to statement-specific parsers
 - `parser.parse_let_statement()` - Parses `let` variable declarations
+- `parser.parse_return_statement()` - Parses `return` statements
 - Error tracking via `errors` field
 
-Currently parses `let` statements. Other statement types (return, expression, etc.) are not yet implemented.
+Currently parses `let` and `return` statements. Expression parsing and other statement types are not yet implemented.
 
 ### REPL
 
@@ -205,7 +221,7 @@ The REPL (`repl.rs`) provides an interactive loop:
 
 ## Testing
 
-Tests are in `src/lexer.rs` and `src/parser.rs`:
+Tests are in `src/lexer.rs`, `src/parser.rs`, and `src/ast.rs`:
 
 ### Lexer Test (Passing)
 
@@ -218,20 +234,27 @@ Verifies the complete tokenization of a sample program including:
 - Boolean logic (`!`, `true`, `false`)
 - Control flow (`if`, `else`, `return`)
 
-### Parser Test (Passing)
+### Parser Tests (Passing)
 
-The parser test in `src/parser.rs` tests let statement and return statement parsing with valid input:
+**Let Statement Test** - Tests let statement parsing with valid input:
 ```rust
 let x = 5;
 let y = 10;
 let foobar = 838383;
 ```
 
-And return statements:
+**Return Statement Test** - Tests return statement parsing:
 ```rust
 return 5;
 return 10;
 return 9933322;
+```
+
+### AST Test (Passing)
+
+Verifies the AST string representation:
+```rust
+let myVar = anotherVar;
 ```
 
 ## Error Handling
@@ -247,7 +270,7 @@ return 9933322;
 - [ ] Add string literal support
 - [ ] Add comment support (`//` and `/* */`)
 - [ ] Better error reporting with position info
-- [ ] Complete parser implementation (return statements, expressions, function calls, etc.)
+- [ ] Complete parser implementation (expression statements, function calls, etc.)
 - [ ] Interpreter/evaluator
 - [ ] Support for more operators and expressions
 
